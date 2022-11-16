@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strings"
 
 	"github.com/apache/airflow-client-go/airflow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -90,13 +91,15 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		authCtx = context.WithValue(authCtx, airflow.ContextBasicAuth, cred)
 	}
 
+	path := strings.TrimRight(u.Path, "/")
+
 	clientConf := &airflow.Configuration{
 		Scheme: u.Scheme,
 		Host:   u.Host,
 		Debug:  true,
 		Servers: airflow.ServerConfigurations{
 			{
-				URL:         "/api/v1",
+				URL:         fmt.Sprint(path, "/api/v1"),
 				Description: "Apache Airflow Stable API.",
 			},
 		},

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/apache/airflow-client-go/airflow"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,11 +52,30 @@ func resourceConnection() *schema.Resource {
 				Optional: true,
 			},
 			"extra": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				DiffSuppressFunc: suppressSameJsonDiff,
+				Optional:         true,
 			},
 		},
 	}
+}
+
+func suppressSameJsonDiff(k, oldo, newo string, d *schema.ResourceData) bool {
+	if strings.TrimSpace(oldo) == strings.TrimSpace(newo) {
+		return true
+	}
+
+	var oldIface interface{}
+	var newIface interface{}
+
+	if err := json.Unmarshal([]byte(oldo), &oldIface); err != nil {
+		return false
+	}
+	if err := json.Unmarshal([]byte(newo), &newIface); err != nil {
+		return false
+	}
+
+	return reflect.DeepEqual(oldIface, newIface)
 }
 
 func resourceConnectionCreate(d *schema.ResourceData, m interface{}) error {
