@@ -128,7 +128,6 @@ func fetchAllUsers(users map[string]airflow.UserCollectionItem, offset int32, m 
 func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Use a lock to prevent concurrent map access.
 	airflowUsersFetch.Lock()
-
 	err := fetchAllUsers(airflowUsers, 0, m)
 	if err != nil {
 		airflowUsersFetch.Unlock()
@@ -141,7 +140,7 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-
+	
 	d.Set("active", user.GetActive())
 	d.Set("email", user.Email)
 	d.Set("failed_login_count", user.GetFailedLoginCount())
