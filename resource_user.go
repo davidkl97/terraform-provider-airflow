@@ -129,17 +129,11 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 	// Use a lock to prevent concurrent map access.
 	airflowUsersFetch.Lock()
 
-	// Fetching all users is only needed once, so make sure to check this.
-	// There will always be >= 1 user; the users that we're using to
-	// make API calls.
-	if len(airflowUsers) == 0 {
-		err := fetchAllUsers(airflowUsers, 0, m)
-		if err != nil {
-			airflowUsersFetch.Unlock()
-			return fmt.Errorf("failed to get all users from Airflow: %w", err)
-		}
+	err := fetchAllUsers(airflowUsers, 0, m)
+	if err != nil {
+		airflowUsersFetch.Unlock()
+		return fmt.Errorf("failed to get all users from Airflow: %w", err)
 	}
-
 	user, exists := airflowUsers[d.Id()]
 	airflowUsersFetch.Unlock()
 
